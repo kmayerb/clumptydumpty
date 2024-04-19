@@ -30,6 +30,10 @@ Starting with the highest degree node, it removes all first degree neighbors (no
 If the min_degree parameter is specified and greater than 1, it filters nodes based on this threshold.
 3. The output is a dictionary clumps where each key is a node (used as a "clump" representative) and its value is a list of the nodes in the clump (including itselt).
 
+
+![test_clumping_1_basic](https://github.com/kmayerb/clumptydumpty/assets/46639063/8bd9772f-6c33-4ef8-a348-798240c25ac9)
+
+
 ### clump_graph_expensive
 
 This function is a more computationally intensive version of the clump_graph function. 
@@ -44,4 +48,5 @@ Key Mechanisms:
 
 These functions together create a utility for grouping nodes in a graph based on their connectivity, potentially suitable for tasks like community detection, clustering, or simplifying graph topology for further analysis.
 
+![test_clumping_2_expensive](https://github.com/kmayerb/clumptydumpty/assets/46639063/733ae1c6-7194-4084-b2cb-755eb4e7b8ef)
 
