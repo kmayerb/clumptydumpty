@@ -24,12 +24,11 @@ This function implements a clumping algorithm with optional enforcement of a min
 
 The steps are as follows:
 
-1. It ranks nodes by their degree (number of connections).
-Starting with the highest degree node, it makes a clump from all the first degree neighbors (nodes directly connected to it), and 
-the it removes them from further consideration.
-2. It then proceeds to the next highest degree node, taking into account the remaining neighbors.
-If the min_degree parameter is specified and greater than 1, it filters nodes based on this threshold.
-3. The output is a dictionary clumps where each key is a node (used as a "clump" representative) and its value is a list of the nodes in the clump (including itselt).
+1.	Rank nodes by their degree (number of connections). Starting with the highest degree node; makes a clump from all the first degree neighbors (nodes directly connected to it), and the removes those nodes from further consideration.
+2.	Proceed to the next highest degree node, taking into account only the remaining nodes.
+3.	Stop once there are no more nodes with degree higher than some threshold.
+The output is a dictionary clumps where each key is a node (used as a "clump" representative) and its value is a list of the nodes in the clump (including itself).
+
 
 
 ![test_clumping_1_basic](https://github.com/kmayerb/clumptydumpty/assets/46639063/8bd9772f-6c33-4ef8-a348-798240c25ac9)
