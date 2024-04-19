@@ -21,8 +21,6 @@ def clump_graph(nn, min_degree = 1):
     1: Rank nodes by degree.
     2: For the node with highest degree, remove all 1st degree neighbors
     3: For the next highest ranking node take all remaining neighbors
-    4: Optionally if expensive is True, recompute the nn dictionary removing already
-    selected nieghbors, and recompute nod rankings by remaining degrees 
     """
     nodes = {x:1 for x in nn.keys()}
     knn = {k:len(v) for k,v in nn.items() if len(v) > 2}
