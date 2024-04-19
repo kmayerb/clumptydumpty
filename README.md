@@ -1,6 +1,21 @@
 
 # clumptydumpty
 
+## Usage
+
+```python 
+import pandas as pd
+df = pd.read_csv("clumpty/tests/nn.csv")
+edges = df.to_dict('split')['data']
+nn = dict()
+for i,j in edges:
+    nn.setdefault(i,[]).append(j)
+    nn.setdefault(j,[]).append(i)
+
+from clumpty.clump import clump_graph, clump_graph_expensive
+cg_basic = clump_graph(nn, min_degree = 1)
+cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
+```
 ## Functions
 
 ### clump_graph
@@ -29,4 +44,4 @@ Key Mechanisms:
 
 These functions together create a utility for grouping nodes in a graph based on their connectivity, potentially suitable for tasks like community detection, clustering, or simplifying graph topology for further analysis.
 
-## Example
+
