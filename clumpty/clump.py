@@ -1,3 +1,25 @@
+
+def clump_graph(nn, min_degree = 1):
+    """
+    Clumping algorithm:
+    1: Rank nodes by degree.
+    2: For the node with highest degree, remove all 1st degree neighbors to form a clump
+    3: For the next highest ranking node take all remaining neighbors form the next clump
+    """
+    nodes = {x:1 for x in nn.keys()}
+    knn = {k:len(v) for k,v in nn.items() if len(v) > 2}
+    knn = dict(sorted(knn.items(), key=lambda item: item[1],reverse = True))
+    clumps = dict()
+    for node, degree in knn.items():
+        if nodes.get(node) == 1:
+            xs = nn[node]
+            xs = [x for x in xs if nodes.get(x) == 1] + [node]
+            if len(xs) > min_degree:
+                clumps[node] = xs
+                for x in xs:
+                    nodes[x] = 0
+    return clumps
+    
 def recompute_nn(nn, all_nodes):
     """
     Parameters
@@ -14,28 +36,6 @@ def recompute_nn(nn, all_nodes):
         updated_x = [i for i in x if all_nodes.get(i) == 1]
         updated_nn[k] = updated_x
     return updated_nn
-
-def clump_graph(nn, min_degree = 1):
-    """
-    Clumping algorithm:
-    1: Rank nodes by degree.
-    2: For the node with highest degree, remove all 1st degree neighbors
-    3: For the next highest ranking node take all remaining neighbors
-    """
-    nodes = {x:1 for x in nn.keys()}
-    knn = {k:len(v) for k,v in nn.items() if len(v) > 2}
-    knn = dict(sorted(knn.items(), key=lambda item: item[1],reverse = True))
-    clumps = dict()
-    for node, degree in knn.items():
-        if nodes.get(node) == 1:
-            xs = nn[node]
-            xs = [x for x in xs if nodes.get(x) == 1] + [node]
-            if len(xs) > min_degree:
-                clumps[node] = xs
-                for x in xs:
-                    nodes[x] = 0
-    return clumps
-    
 
 def clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1):
     """
