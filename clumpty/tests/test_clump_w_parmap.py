@@ -53,30 +53,69 @@ def viz(cg, G, num = 1):
 #G = atlas()
 
 def test_parmap_version_for_efficiency():
-	G1 = nx.balanced_tree(r=2, h=4)
-	G2 = nx.balanced_tree(r=2, h=5)
-	G3 = nx.balanced_tree(r=2, h=2)
-	U = nx.disjoint_union(G1, G2)
-	U = nx.disjoint_union(U,G3)
+    import networkx as nx
+    from clumpty.clump import clump_graph_expensive_by_component_parmap
+    G1 = nx.balanced_tree(r=2, h=4)
+    G2 = nx.balanced_tree(r=2, h=5)
+    G3 = nx.balanced_tree(r=2, h=2)
+    U = nx.disjoint_union(G1, G2)
+    U = nx.disjoint_union(U,G3)
 
-	cg_exp1 = clump_graph_expensive_by_component_parmap(U)
-	#viz(cg_exp, U, 14)
+    cg_exp1 = clump_graph_expensive_by_component_parmap(U, cpus = 2)
+    viz(cg_exp1, U, 3)
 
-	# slow version
-	cg_all = list()
-	S = [U.subgraph(c).copy() for c in nx.connected_components(U)]
-	for g in S:
-		nn = dict()
-		for i,j in g.edges:
-		    nn.setdefault(i,[]).append(j)
-		    nn.setdefault(j,[]).append(i)
-		cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
-		cg_all.append(cg_exp)
-	cg_exp2 = dict()
-	for d in cg_all:
-	    cg_exp2.update(d)
+    # slow version
+    cg_all = list()
+    S = [U.subgraph(c).copy() for c in nx.connected_components(U)]
+    for g in S:
+        nn = dict()
+        for i,j in g.edges:
+            nn.setdefault(i,[]).append(j)
+            nn.setdefault(j,[]).append(i)
+        cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
+        cg_all.append(cg_exp)
+    cg_exp2 = dict()
+    for d in cg_all:
+        cg_exp2.update(d)
 
-	asset cg_exp1 == cg_exp2
+    assert cg_exp1 == cg_exp2
 
+
+def test_clump_components_with_network_x_parmap():
+    import networkx as nx
+    from clumpty.clump import clump_components_with_networkx_parmap
+    G1 = nx.balanced_tree(r=2, h=4)
+    G2 = nx.balanced_tree(r=2, h=5)
+    G3 = nx.balanced_tree(r=2, h=2)
+    U = nx.disjoint_union(G1, G2)
+    U = nx.disjoint_union(U,G3)
+    cg_exp = clump_components_with_networkx_parmap(G=U.copy(), cpus = 2)
+    viz(cg_exp, U, num = 7)
+    assert isinstance(cg_exp, dict)
+
+
+
+# import networkx as nx
+# from clumpty.clump import clump_graph_expensive_by_component_parmap
+# G1 = nx.balanced_tree(r=2, h=4)
+# G2 = nx.balanced_tree(r=2, h=5)
+# G3 = nx.balanced_tree(r=2, h=2)
+# U = nx.disjoint_union(G1, G2)
+# U = nx.disjoint_union(U,G3)
+# degrees = list(U.degree())
+# print(sum([x[1] for x in degrees]))
+# # Sort by degree, descending
+# degrees_sorted_by_degree = sorted(degrees, key=lambda x: x[1], reverse=True)
+# node = degrees_sorted_by_degree[0][0]
+# U.remove_node(1)
+# degrees = list(U.degree())
+# print(sum([x[1] for x in degrees]))
+# # Sort by degree, descending
+# degrees_sorted_by_degree = sorted(degrees, key=lambda x: x[1], reverse=True)
+
+
+
+
+# test_parmap_version_for_efficiency()
 
 

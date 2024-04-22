@@ -115,13 +115,75 @@ def clump_component_expensive(g):
     return sub_clumping
 
 
-def clump_graph_expensive_by_component_parmap(G, cpus = 2):
-    import parmap
-    import networkx as nx
-    S = [G.subgraph(c).copy() for c in nx.connected_components(G)]
-    cg_all = parmap.map(clump_component_expensive, S, pm_processes = cpus, pm_pbar = True)
-    cg_exp = dict()
-    for d in cg_all:
-        cg_exp.update(d)
-    return cg_exp
+# def clump_graph_expensive_by_component_parmap(G, cpus = 2):
+#     import parmap
+#     import networkx as nx
+#     S = [G.subgraph(c).copy() for c in nx.connected_components(G)]
+#     cg_all = parmap.map(clump_component_expensive, S, pm_processes = cpus, pm_pbar = True)
+#     cg_exp = dict()
+#     for d in cg_all:
+#         cg_exp.update(d)
+#     return cg_exp
 
+
+# def clump_components_with_networkx_parmap(G, cpus = 2):
+#     import networkx as nx
+#     import parmap
+#     S = [G.subgraph(c).copy() for c in nx.connected_components(G)]
+#     cg_all = parmap.map(clump_with_networkx,S,pm_processes = cpus, pm_pbar = True)
+#     cg_exp = dict()
+#     for d in cg_all:
+#         cg_exp.update(d)
+#     return cg_exp
+
+def clump_with_networkx(g, clumps = None):
+    import networkx as nx
+    if clumps is None:
+        clumps = dict()
+    if len(g.nodes) > 1:
+        degrees = list(g.degree())
+        degrees = sorted(degrees, key=lambda x: x[1], reverse=True)
+        node_x = degrees[0][0]
+        if degrees[0][1] > 1:
+            neighbors_of_x = list(g.neighbors(node_x))
+            clumps[node_x] = neighbors_of_x + [node_x]
+            print(clumps)
+            for n in neighbors_of_x + [node_x]:
+                g.remove_node(n)
+            return clump_with_networkx(g=g, clumps = clumps)
+        else:
+            return clumps
+    else:
+        return clumps
+
+def viz(cg, G, num = 1):
+    """
+    from clumpty.clump import clump_graph, clump_graph_expensive
+    cg_basic = clump_graph(nn, min_degree = 1)
+    cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
+    viz(cg_exp, num = 2)
+    viz(cg_basic, num = 1)
+    """
+    import matplotlib.pyplot as plt
+    from tcrdist.html_colors import get_html_colors
+    colors = dict()
+    html_colors = get_html_colors(len(cg.keys()))
+
+    var_to_col = {k:v for k,v in zip(cg.keys(), html_colors)}
+
+    for k,v in cg.items():
+        print(v)
+        for i in v:
+            colors[i] = var_to_col.get(k)
+
+    plt.figure(num, figsize=(8, 8))
+    # layout graphs with positions using graphviz neato
+    pos = nx.nx_agraph.graphviz_layout(G, prog="neato")
+    # color nodes the same in each connected subgraph
+    C = (G.subgraph(c) for c in nx.connected_components(G))
+    for g in C:
+        c = [colors.get(i, "black") for i in g.nodes] # random color...
+        nx.draw(g, pos, node_size=5, node_color=c, vmin=0.0, vmax=1.0, with_labels=False)
+
+    print(f'test_clumping_{num}.pdf')
+    plt.savefig(f'test_clumping_{num}.pdf')
