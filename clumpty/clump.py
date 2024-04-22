@@ -58,12 +58,13 @@ def clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree 
     # knn is dictionary of node:degree    
     knn = {k:len(v) for k,v in nn.items() if len(v) > min_degree}
     knn = dict(sorted(knn.items(), key=lambda item: item[1],reverse = True))
+    #print(knn.items())
     # The first node is the largest
     if len(knn.items()) > 0:    
         node = next(iter(knn))
        
         # check that top node is still available
-        if available_nodes .get(node) == 1:
+        if available_nodes.get(node) == 1:
             # xs are all its 1st degree neighbors
             xs = nn[node]
             xs = [x for x in xs if available_nodes .get(x) == 1] + [node]
@@ -82,3 +83,45 @@ def clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree 
             return clump_graph_expensive(nn=nn, available_nodes  =available_nodes , clumps=clumps, min_degree =min_degree)
     else:
         return clumps
+
+
+def clump_graph_expensive_by_component(G):
+
+    """
+    Avoid expensive resorts by splitting by component
+    """
+    import networkx as nx
+    S = [G.subgraph(c).copy() for c in nx.connected_components(G)]
+    cg_all = list()
+    for g in S:
+        nn = dict()
+        for i,j in g.edges:
+            nn.setdefault(i,[]).append(j)
+            nn.setdefault(j,[]).append(i)
+        cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
+        cg_all.append(cg_exp)
+    cg_exp = dict()
+    for d in cg_all:
+        cg_exp.update(d)
+    return cg_exp
+
+
+def clump_component_expensive(g):
+    nn = dict()
+    for i,j in g.edges:
+        nn.setdefault(i,[]).append(j)
+        nn.setdefault(j,[]).append(i)
+    sub_clumping = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
+    return sub_clumping
+
+
+def clump_graph_expensive_by_component_parmap(G, cpus = 2):
+    import parmap
+    import networkx as nx
+    S = [G.subgraph(c).copy() for c in nx.connected_components(G)]
+    cg_all = parmap.map(clump_component_expensive, S, pm_processes = cpus, pm_pbar = True)
+    cg_exp = dict()
+    for d in cg_all:
+        cg_exp.update(d)
+    return cg_exp
+

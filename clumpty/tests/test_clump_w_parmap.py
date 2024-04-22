@@ -1,15 +1,13 @@
-from clumpty.clump import clump_graph, clump_graph_expensive
-from networkx import balanced_tree, graph_atlas, graph_atlas_g
-import matplotlib.pyplot as plt
+# simple 
 import networkx as nx
-import random
-import pytest
-import pandas as pd
-
+import sys
+sys.path.append('/fh/fast/gilbert_p/kmayerbl/gitfix/clumpty/')
+from clumpty.clump import clump_graph, recompute_nn, clump_graph_expensive, clump_graph_expensive_by_component_parmap
+#print(sys.path)
 def atlas():
     """Make a test set of graphs """
     GraphMatcher = nx.isomorphism.vf2userfunc.GraphMatcher
-    Atlas = nx.graph_atlas_g()[500:600]  # 0, 1, 2 => no edges. 208 is last 6 node graph
+    Atlas = nx.graph_atlas_g()[900:1020]  # 0, 1, 2 => no edges. 208 is last 6 node graph
     U = nx.Graph()  # graph for union of all graphs in atlas
     for G in Atlas:
         # check if connected
@@ -18,6 +16,7 @@ def atlas():
             if not GraphMatcher(U, G).subgraph_is_isomorphic():
                 U = nx.disjoint_union(U, G)
     return U
+
 
 def viz(cg, G, num = 1):
     """
@@ -51,36 +50,33 @@ def viz(cg, G, num = 1):
     print(f'test_clumping_{num}.pdf')
     plt.savefig(f'test_clumping_{num}.pdf')
 
+#G = atlas()
 
-# create test nn 
-G = atlas()
-# s = list()
-# for i,j in G.edges:
-#   s.append((i,j))
-# df = pd.DataFrame(s, columns = ['i','j'])
-# df.to_csv("clumpty/tests/nn.csv", index = False)
+def test_parmap_version_for_efficiency():
+	G1 = nx.balanced_tree(r=2, h=4)
+	G2 = nx.balanced_tree(r=2, h=5)
+	G3 = nx.balanced_tree(r=2, h=2)
+	U = nx.disjoint_union(G1, G2)
+	U = nx.disjoint_union(U,G3)
 
-import pandas as pd
-df = pd.read_csv("clumpty/tests/nn.csv")
-edges = df.to_dict('split')['data']
-nn = dict()
-for i,j in edges:
-    nn.setdefault(i,[]).append(j)
-    nn.setdefault(j,[]).append(i)
+	cg_exp1 = clump_graph_expensive_by_component_parmap(U)
+	#viz(cg_exp, U, 14)
+
+	# slow version
+	cg_all = list()
+	S = [U.subgraph(c).copy() for c in nx.connected_components(U)]
+	for g in S:
+		nn = dict()
+		for i,j in g.edges:
+		    nn.setdefault(i,[]).append(j)
+		    nn.setdefault(j,[]).append(i)
+		cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
+		cg_all.append(cg_exp)
+	cg_exp2 = dict()
+	for d in cg_all:
+	    cg_exp2.update(d)
+
+	asset cg_exp1 == cg_exp2
 
 
-def test_basic():
-    cg_basic = clump_graph(nn, min_degree = 1)
-    assert isinstance(cg_basic, dict)
 
-def test_clump_graph_expensive():
-    cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
-    assert isinstance(cg_basic, dict)
-
-@pytest.mark.skip(reason="Don't remake plots in random places")
-def test_viz()
-    from clumpty.clump import clump_graph, clump_graph_expensive
-    cg_basic = clump_graph(nn, min_degree = 1)
-    cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
-    viz(cg_exp, num = 2)
-    viz(cg_basic, num = 1)

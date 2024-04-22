@@ -50,3 +50,24 @@ These functions together create a utility for grouping nodes in a graph based on
 
 ![test_clumping_2_expensive](https://github.com/kmayerb/clumptydumpty/assets/46639063/733ae1c6-7194-4084-b2cb-755eb4e7b8ef)
 
+
+### clump_graph_expensive_by_component_parmap
+
+If the graph is made of mutliple disjoint connected components, we can find clumps in parrallel with parmap. 
+
+```python
+import networkx as nx
+from clumpty.clump import clump_graph_expensive_by_component_parmap
+G1 = nx.balanced_tree(r=2, h=4)
+G2 = nx.balanced_tree(r=2, h=5)
+G3 = nx.balanced_tree(r=2, h=2)
+U = nx.disjoint_union(G1, G2)
+U = nx.disjoint_union(U,G3)
+cg_exp1 = clump_graph_expensive_by_component_parmap(U, cpus = 2)
+viz(cg_exp1, U, 3)
+```
+
+![test_clumping_3](https://github.com/kmayerb/clumptydumpty/assets/46639063/559e3ad0-7ccf-4433-a36e-64b0f6768b7c)
+
+
+
