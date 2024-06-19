@@ -84,3 +84,5 @@ def test_viz()
     cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
     viz(cg_exp, num = 2)
     viz(cg_basic, num = 1)
+
+    
