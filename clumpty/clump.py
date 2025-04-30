@@ -85,7 +85,7 @@ def clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree 
         return clumps
 
 
-def clump_graph_expensive_by_component(G):
+def clump_graph_expensive_by_component(G, min_degree = 1):
 
     """
     Avoid expensive resorts by splitting by component
@@ -99,7 +99,7 @@ def clump_graph_expensive_by_component(G):
             if i!=j:
                 nn.setdefault(i,[]).append(j)
                 nn.setdefault(j,[]).append(i)
-        cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
+        cg_exp = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = min_degree)
         cg_all.append(cg_exp)
     cg_exp = dict()
     for d in cg_all:
@@ -107,21 +107,21 @@ def clump_graph_expensive_by_component(G):
     return cg_exp
 
 
-def clump_component_expensive(g):
+def clump_component_expensive(g, min_degree = 1):
     nn = dict()
     for i,j in g.edges:
         if i!=j:
             nn.setdefault(i,[]).append(j)
             nn.setdefault(j,[]).append(i)
-    sub_clumping = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = 1)
+    sub_clumping = clump_graph_expensive(nn, available_nodes = None, clumps = None, min_degree = min_degree)
     return sub_clumping
 
 
-def clump_graph_expensive_by_component_parmap(G, cpus = 2):
+def clump_graph_expensive_by_component_parmap(G, cpus = 2, min_degree = 1):
     import parmap
     import networkx as nx
     S = [G.subgraph(c).copy() for c in nx.connected_components(G)]
-    cg_all = parmap.map(clump_component_expensive, S, pm_processes = cpus, pm_pbar = True)
+    cg_all = parmap.map(clump_component_expensive, S, min_degree, pm_processes = cpus, pm_pbar = True)
     cg_exp = dict()
     for d in cg_all:
         cg_exp.update(d)
